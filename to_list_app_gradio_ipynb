@@ -1,0 +1,166 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNACRMLwPul+sShwYLiLhw7",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/SNAHASISH-MUKHERJEE/CODSOFT/blob/main/to_list_app_gradio_ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 650
+        },
+        "id": "7OQsXSkBc0Xa",
+        "outputId": "b14143c7-9578-47e0-b7ec-15fb63bfbe15"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "It looks like you are running Gradio on a hosted Jupyter notebook, which requires `share=True`. Automatically setting `share=True` (you can turn this off by setting `share=False` in `launch()` explicitly).\n",
+            "\n",
+            "Colab notebook detected. To show errors in colab notebook, set debug=True in launch()\n",
+            "* Running on public URL: https://ac0c7eb46c153f8e18.gradio.live\n",
+            "\n",
+            "This share link expires in 1 week. For free permanent hosting and GPU upgrades, run `gradio deploy` from the terminal in the working directory to deploy to Hugging Face Spaces (https://huggingface.co/spaces)\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": [
+              "<div><iframe src=\"https://ac0c7eb46c153f8e18.gradio.live\" width=\"100%\" height=\"500\" allow=\"autoplay; camera; microphone; clipboard-read; clipboard-write;\" frameborder=\"0\" allowfullscreen></iframe></div>"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": []
+          },
+          "metadata": {},
+          "execution_count": 4
+        }
+      ],
+      "source": [
+        "!pip install gradio --quiet\n",
+        "\n",
+        "import gradio as gr\n",
+        "\n",
+        "# Task list (each task is a dict)\n",
+        "tasks = []\n",
+        "\n",
+        "# Add a task\n",
+        "def add_task(task_text):\n",
+        "    if task_text.strip():\n",
+        "        tasks.append({\"text\": task_text.strip(), \"done\": False})\n",
+        "    return update_display()\n",
+        "\n",
+        "# Mark a task as done or undone\n",
+        "def toggle_done(index):\n",
+        "    try:\n",
+        "        tasks[int(index)][\"done\"] = not tasks[int(index)][\"done\"]\n",
+        "    except:\n",
+        "        return \"Invalid task number.\"\n",
+        "    return update_display()\n",
+        "\n",
+        "# Edit a task\n",
+        "def edit_task(index, new_text):\n",
+        "    try:\n",
+        "        if new_text.strip():\n",
+        "            tasks[int(index)][\"text\"] = new_text.strip()\n",
+        "        else:\n",
+        "            return \"Task cannot be empty.\"\n",
+        "    except:\n",
+        "        return \"Invalid task number.\"\n",
+        "    return update_display()\n",
+        "\n",
+        "# Delete a task\n",
+        "def delete_task(index):\n",
+        "    try:\n",
+        "        tasks.pop(int(index))\n",
+        "    except:\n",
+        "        return \"Invalid task number.\"\n",
+        "    return update_display()\n",
+        "\n",
+        "# Clear all tasks\n",
+        "def clear_tasks():\n",
+        "    tasks.clear()\n",
+        "    return \"All tasks cleared.\"\n",
+        "\n",
+        "# Display the task list\n",
+        "def update_display():\n",
+        "    if not tasks:\n",
+        "        return \"No tasks yet.\"\n",
+        "    display = \"\"\n",
+        "    for i, task in enumerate(tasks):\n",
+        "        status = \"✅\" if task[\"done\"] else \"❌\"\n",
+        "        display += f\"{i}. {task['text']} [{status}]\\n\"\n",
+        "    return display.strip()\n",
+        "\n",
+        "# Gradio Interface\n",
+        "with gr.Blocks() as todo_app:\n",
+        "    gr.Markdown(\"## 📝 To-Do List App (Gradio)\")\n",
+        "\n",
+        "    with gr.Row():\n",
+        "        new_task = gr.Textbox(placeholder=\"Enter a new task...\")\n",
+        "        add_btn = gr.Button(\"Add Task\")\n",
+        "\n",
+        "    task_display = gr.Textbox(label=\"Current Tasks\", lines=10, interactive=False)\n",
+        "\n",
+        "    with gr.Row():\n",
+        "        toggle_index = gr.Textbox(placeholder=\"Index to toggle done\")\n",
+        "        toggle_btn = gr.Button(\"Mark Done/Undone\")\n",
+        "\n",
+        "    with gr.Row():\n",
+        "        edit_index = gr.Textbox(placeholder=\"Index to edit\")\n",
+        "        edit_text = gr.Textbox(placeholder=\"New task text\")\n",
+        "        edit_btn = gr.Button(\"Edit Task\")\n",
+        "\n",
+        "    with gr.Row():\n",
+        "        delete_index = gr.Textbox(placeholder=\"Index to delete\")\n",
+        "        delete_btn = gr.Button(\"Delete Task\")\n",
+        "\n",
+        "    clear_btn = gr.Button(\"Clear All Tasks\")\n",
+        "\n",
+        "    # Bind actions to buttons\n",
+        "    add_btn.click(add_task, inputs=new_task, outputs=task_display)\n",
+        "    toggle_btn.click(toggle_done, inputs=toggle_index, outputs=task_display)\n",
+        "    edit_btn.click(edit_task, inputs=[edit_index, edit_text], outputs=task_display)\n",
+        "    delete_btn.click(delete_task, inputs=delete_index, outputs=task_display)\n",
+        "    clear_btn.click(clear_tasks, outputs=task_display)\n",
+        "\n",
+        "todo_app.launch()\n"
+      ]
+    }
+  ]
+}
